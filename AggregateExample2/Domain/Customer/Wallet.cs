@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using AggregateExample2.Domain.Customer;
 using AggregateExample2.Domain.Customer.Events;
 using AggregateExample2.Infrastructure;
 
-namespace AggregateExample2.Domain
+namespace AggregateExample2.Domain.Customer
 {
     internal class Wallet : Entity
     {
