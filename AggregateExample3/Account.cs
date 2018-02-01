@@ -58,8 +58,9 @@ namespace AggregateExample3
             TryResumeAccount();
         }
 
-        public void TransferIn(Transaction transaction, Account source, DateTimeOffset transactionDate)
+        public void TransferIn(Money amount, Account source, DateTimeOffset transactionDate)
         {
+            var transaction = new Transaction(amount, transactionDate);
             var e = _ledger.TransferIn(transaction, source.Id);
             RaiseEvent(e);
         }
@@ -77,7 +78,7 @@ namespace AggregateExample3
             
             var transaction = new Transaction(amount, transactionDate);
             var e = _ledger.TransferOut(transaction, destination.Id);
-            destination.TransferIn(transaction, this, transactionDate);
+            destination.TransferIn(amount, this, transactionDate);
             RaiseEvent(e);
         }
 
