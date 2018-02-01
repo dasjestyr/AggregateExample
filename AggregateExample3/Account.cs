@@ -43,7 +43,12 @@ namespace AggregateExample3
             // if the account crosses the limit, allow it but then suspend it until zero balance
             // a real world scneario might be more complex. For example, the maximum negative 
             // balance would be separate than how much of an overdraft is permitted in a single
-            // transaction.
+            // transaction. I'd probably also have a separate event that fires every time an overdraft
+            // is permitted to allow for other features like overdraft protection accounts to kick in
+            // for example, this overdrafts by $20, attempt to transfer that amount out of a customer's
+            // fallback account to prevent the overdraft and only fire the actual overdraft event if
+            // the fallback account fails to make up the difference. Additional checks would obviously
+            // put in place to differentiate fees from debits so that an endless debit loop doesn't occur
 
             var lockedEvent = new AccountSuspended {SuspendedDate = DateTimeOffset.UtcNow};
             _accountIsSuspended = true;
