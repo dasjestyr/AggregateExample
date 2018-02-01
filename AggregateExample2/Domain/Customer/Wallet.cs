@@ -10,12 +10,12 @@ namespace AggregateExample2.Domain.Customer
 
         public Money Balance { get; private set; }
 
-        public static WalletCreated Create(AccountNumber accountNumber, Money initalBalance)
+        public static WalletCreated Create(AccountNumber accountNumber, Money initialBalance)
         {
             if(accountNumber == null)
                 throw new ArgumentNullException(nameof(accountNumber));
 
-            if(initalBalance < Money.Default)
+            if(initialBalance < Money.Default)
                 throw new NegativeOpeningBalanceException("Cannot open a wallet with a negative balance.");
 
             /* this is just to facilitate the demo */
@@ -26,7 +26,7 @@ namespace AggregateExample2.Domain.Customer
             return new WalletCreated
             {
                 EntityId = newID,
-                InitialBalance = initalBalance.Value
+                InitialBalance = initialBalance.Value
             };
         }
 

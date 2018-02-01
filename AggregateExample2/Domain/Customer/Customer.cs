@@ -44,12 +44,12 @@ namespace AggregateExample2.Domain.Customer
             return customer;
         }
 
-        public void CreateWallet(Money initalBalance)
+        public void CreateWallet(Money initialBalance)
         {
-            if(initalBalance < Money.Default)
+            if(initialBalance < Money.Default)
                 throw new NegativeOpeningBalanceException("Cannot create a new wallet with a negative balance.");
 
-            var createdWallet = Wallet.Create(new AccountNumber(Id), initalBalance);
+            var createdWallet = Wallet.Create(new AccountNumber(Id), initialBalance);
             RaiseEvent(createdWallet);
         }
 
