@@ -9,9 +9,9 @@ namespace AggregateExample3
 
         public Money Balance => CalculateBalance();
 
-        public AccountDebited Debit(Money amount, DateTimeOffset transactionDate)
+        public AccountDebited Debit(Transaction transaction)
         {
-            var transaction = new Transaction(TransactionType.Debit, amount, transactionDate);
+            transaction.SetType(TransactionType.Debit);
             _transactions.Add(transaction);
 
             return new AccountDebited
@@ -21,15 +21,40 @@ namespace AggregateExample3
             };
         }
 
-        public AccountCredited Credit(Money amount, DateTimeOffset transactionDate)
+        public AccountCredited Credit(Transaction transaction)
         {
-            var transaction = new Transaction(TransactionType.Credit, amount, transactionDate);
+            transaction.SetType(TransactionType.Credit);
             _transactions.Add(transaction);
 
             return new AccountCredited
             {
                 Amount = transaction.Amount.Amount,
                 TransactionDate = transaction.TransactionDate
+            };
+        }
+
+        public MoneyTransferredOut TransferOut(Transaction transaction, Guid destinationAccountId)
+        {
+            transaction.SetType(TransactionType.TransferOut);
+            _transactions.Add(transaction);
+
+            return new MoneyTransferredOut
+            {
+                Amount = transaction.Amount.Amount,
+                DestinationAccountId = destinationAccountId,
+                TransferDate = transaction.TransactionDate
+            };
+        }
+
+        public MoneyTransferredIn TransferIn(Transaction transaction, Guid sourceAccountId)
+        {
+            transaction.SetType(TransactionType.TransferIn);
+            _transactions.Add(transaction);
+            return new MoneyTransferredIn
+            {
+                Amount = transaction.Amount.Amount,
+                SourceAccountId = sourceAccountId,
+                TransferDate = transaction.TransactionDate
             };
         }
 
@@ -41,9 +66,11 @@ namespace AggregateExample3
                 switch (transaction.Type)
                 {
                     case TransactionType.Debit:
+                    case TransactionType.TransferOut:
                         balance -= transaction.Amount;
                         break;
                     case TransactionType.Credit:
+                    case TransactionType.TransferIn:
                         balance += transaction.Amount;
                         break;
                 }
@@ -51,5 +78,9 @@ namespace AggregateExample3
 
             return balance;
         }
+
+        // In a full event-sourced solution, I'd usually put the event applicators
+        // down here and those would be what *actually* update the state. See
+        // AggregateExample2 for a demonstration of that
     }
 }

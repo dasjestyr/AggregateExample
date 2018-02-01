@@ -30,7 +30,7 @@ namespace AggregateExample3
             var destination = repository.Get(command.DestinationAccount);
             var amount = new Money(command.Amount);
 
-            source.Transfer(amount, destination, DateTimeOffset.UtcNow);
+            source.TransferOut(amount, destination, DateTimeOffset.UtcNow);
             repository.Save(source, destination);
         }
 
@@ -153,16 +153,16 @@ namespace AggregateExample3
         }
 
         [Fact]
-        public void Transfer_EachAccountHasCorrectEvents()
+        public void TransferOut_EachAccountHasCorrectEvents()
         {
             var accountA = GetAccountA();
             var accountB = GetAccountB();
 
             var transferAmount = new Money(10.00M);
-            accountA.Transfer(transferAmount, accountB, DateTimeOffset.UtcNow);
+            accountA.TransferOut(transferAmount, accountB, DateTimeOffset.UtcNow);
 
-            AssertEventIsRaised<AccountDebited>(accountA);
-            AssertEventIsRaised<AccountCredited>(accountB);
+            AssertEventIsRaised<MoneyTransferredOut>(accountA);
+            AssertEventIsRaised<MoneyTransferredIn>(accountB);
         }
 
         #region -- Helpers --

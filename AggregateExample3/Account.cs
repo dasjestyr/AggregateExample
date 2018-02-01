@@ -32,8 +32,9 @@ namespace AggregateExample3
         public void Debit(Money amount, DateTimeOffset transactionDate)
         {
             EnsureAccountCanWithdraw();
-            
-            var accountDebited = _ledger.Debit(amount, transactionDate);
+
+            var transaction = new Transaction(amount, transactionDate);
+            var accountDebited = _ledger.Debit(transaction);
             RaiseEvent(accountDebited);
 
             if (Balance > _overdraftLimit)
@@ -51,11 +52,18 @@ namespace AggregateExample3
 
         public void Credit(Money amount, DateTimeOffset transactionDate)
         {
-            var e = _ledger.Credit(amount, transactionDate);
+            var transaction = new Transaction(amount, transactionDate);
+            var e = _ledger.Credit(transaction);
             RaiseEvent(e);
             TryResumeAccount();
         }
 
+        public void TransferIn(Transaction transaction, Account source, DateTimeOffset transactionDate)
+        {
+            var e = _ledger.TransferIn(transaction, source.Id);
+            RaiseEvent(e);
+        }
+        
         /// <summary>
         /// This is what I was talking about when I said the method on the AR simply mediates
         /// between two instances of the same aggregate (through the destination Account root)
@@ -63,13 +71,14 @@ namespace AggregateExample3
         /// <param name="amount"></param>
         /// <param name="destination"></param>
         /// <param name="transactionDate"></param>
-        public void Transfer(Money amount, Account destination, DateTimeOffset transactionDate)
+        public void TransferOut(Money amount, Account destination, DateTimeOffset transactionDate)
         {
             EnsureAccountCanWithdraw();
-
-            // events are already handled on their respective root
-            Debit(amount, transactionDate);
-            destination.Credit(amount, transactionDate);
+            
+            var transaction = new Transaction(amount, transactionDate);
+            var e = _ledger.TransferOut(transaction, destination.Id);
+            destination.TransferIn(transaction, this, transactionDate);
+            RaiseEvent(e);
         }
 
         private void EnsureAccountCanWithdraw()
@@ -87,5 +96,11 @@ namespace AggregateExample3
             var resumed = new AccountResumed { ResumedDate = DateTimeOffset.UtcNow };
             RaiseEvent(resumed);
         }
+
+        // In a full event-sourced solution, I'd usually put the event applicators
+        // down here and those would be what *actually* update the state. If the event
+        // belongs to a subordinate entity, I would use the apply event in the root to
+        // forward that event to the correct entity. See AggregateExample2 for a 
+        // demonstration of that.
     }
 }
